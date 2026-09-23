@@ -1,81 +1,110 @@
-######################## IMPORTANT ########################
-""" Do not rename the variables or functions.
-Do not change the function parameters.
-Do not add input() calls inside airport_manager.py.
-The file must be importable by the tests. """
-###########################################################
+"""Airport data and operations for the list exercise."""
+
+airport_info = ("OUL", 1, "14-09-2026")
+allowed_gates = {"A1", "A2", "A3", "A4", "B1", "B2"}
+restricted_destinations = {"Moscow", "Pyongyang"}
+flights = {
+    "AY450": {
+        "destination": "Helsinki", "departure": "08:30", "gate": "A2",
+        "capacity": 5, "passengers": ["Alice Wong", "David Kim", "Fatima Ali"],
+    },
+    "SK271": {
+        "destination": "Stockholm", "departure": "10:15", "gate": "B1",
+        "capacity": 4, "passengers": ["Chen Wei", "George Smith"],
+    },
+    "LH2491": {
+        "destination": "Munich", "departure": "12:40", "gate": "A4",
+        "capacity": 5, "passengers": ["Hana Lee", "Maria Garcia", "Noah Wilson"],
+    },
+}
 
 
-airport_info = None
-allowed_gates = None
-restricted_destinations = None
-flights = None
-
-
-## Logic to find if a flight exists
 def find_flight(flights, flight_number):
-    pass
+    requested = flight_number.strip().casefold()
+    for key in flights:
+        if key.casefold() == requested:
+            return key
+    return None
 
 
-## Logic to find if a passenger exists
 def passenger_exists(passengers, passenger_name):
-    pass
+    requested = passenger_name.strip().casefold()
+    for name in passengers:
+        if name.strip().casefold() == requested:
+            return True
+    return False
 
 
-## Logic to check in a passenger
-def check_in_passenger(
-    flights,
-    flight_number,
-    passenger_name,
-    restricted_destinations
-):
-    pass
+def check_in_passenger(flights, flight_number, passenger_name, restricted_destinations):
+    key = find_flight(flights, flight_number)
+    if key is None:
+        return "FLIGHT_NOT_FOUND"
+    name = passenger_name.strip()
+    if not name:
+        return "EMPTY_NAME"
+    flight = flights[key]
+    if flight["destination"].casefold() in {
+        destination.casefold() for destination in restricted_destinations
+    }:
+        return "RESTRICTED"
+    if passenger_exists(flight["passengers"], name):
+        return "DUPLICATE"
+    if len(flight["passengers"]) >= flight["capacity"]:
+        return "FULL"
+    flight["passengers"].append(name.title())
+    return "OK"
 
 
-## Logic to remove a passenger from a flight
-def remove_passenger(
-    flights,
-    flight_number,
-    passenger_name
-):
-    pass
+def remove_passenger(flights, flight_number, passenger_name):
+    key = find_flight(flights, flight_number)
+    if key is None:
+        return "FLIGHT_NOT_FOUND"
+    for name in flights[key]["passengers"]:
+        if name.strip().casefold() == passenger_name.strip().casefold():
+            flights[key]["passengers"].remove(name)
+            return "OK"
+    return "PASSENGER_NOT_FOUND"
 
 
-# Logic to change the gate of a flight
-def change_gate(
-    flights,
-    flight_number,
-    new_gate,
-    allowed_gates
-):
-    pass
+def change_gate(flights, flight_number, new_gate, allowed_gates):
+    key = find_flight(flights, flight_number)
+    if key is None:
+        return "FLIGHT_NOT_FOUND"
+    requested = new_gate.strip().casefold()
+    for gate in allowed_gates:
+        if gate.casefold() == requested:
+            flights[key]["gate"] = gate
+            return "OK"
+    return "INVALID_GATE"
 
 
-# Logic to get the status of a flight
 def flight_status(flight):
-    pass
+    count = len(flight["passengers"])
+    capacity = flight["capacity"]
+    if count >= capacity:
+        return "FULL"
+    if count / capacity >= 0.75:
+        return "ALMOST FULL"
+    return "AVAILABLE"
 
 
-
-# Logic to get the sorted manifest of a flight
-def sorted_manifest(
-    flights,
-    flight_number
-):
-    pass
+def sorted_manifest(flights, flight_number):
+    key = find_flight(flights, flight_number)
+    if key is None:
+        return None
+    return sorted(flights[key]["passengers"])
 
 
-# Logic to get the total number of passengers across all flights
 def total_passengers(flights):
-    pass
+    total = 0
+    for flight in flights.values():
+        total += len(flight["passengers"])
+    return total
 
 
-# Logic to check if any flight is full
 def any_full_flight(flights):
-    pass
+    return any(flight_status(flight) == "FULL" for flight in flights.values())
 
 
-
-# Logic to check if all flights have at least one passenger
 def all_flights_have_passengers(flights):
-    pass
+    return all(len(flight["passengers"]) > 0 for flight in flights.values())
